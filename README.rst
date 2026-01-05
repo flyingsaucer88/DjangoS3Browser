@@ -21,6 +21,12 @@ Be sure to check out the following project resources:
 
 Quick Start
 -----------
+Requirements:
+
+- Python 3.8+
+- Django 4.2+ (5.x supported)
+- boto3 1.35+
+
 First, download library:
 
 .. code-block:: sh
@@ -85,7 +91,10 @@ Then, add to urls.py:
 .. code-block:: python
 
 
-    url(r'^' + settings.S3_BROWSER_SETTINGS + '/', include('djangoS3Browser.s3_browser.urls')),
+    from django.urls import include, path
+
+
+    path(f"{settings.S3_BROWSER_SETTINGS}/", include("djangoS3Browser.s3_browser.urls")),
 
 
 Then, add this to the top of the page you want to add:
