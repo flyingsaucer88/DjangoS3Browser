@@ -11,45 +11,64 @@
 
         var startUpload = function (files) {
             var loc = $('#location').attr("data-location");
+            var bucket = $('#bucket').attr("data-bucket");
             $.each(files, function (key, file) {
-                var data = new FormData();
-                data.append("file", file);
-                data.append("loc", loc);
                 $.ajax({
-                    xhr: function () {
-                        var xhr = new window.XMLHttpRequest();
-                        // Upload progress
-                        xhr.upload.addEventListener("progress", function (evt) {
-                            if (evt.lengthComputable) {
-                                var percentComplete = (evt.loaded / evt.total * 100 | 0);
-                                var progress_bar = document.getElementById("progress-bar");
-                                var progress_bar_rate = document.getElementById("progress-bar-rate");
-                                progress_bar.style.width = percentComplete + '%';
-                                progress_bar_rate.innerHTML = percentComplete + ' % ' + file.name;
-                            }
-                        }, false);
-                        return xhr;
-                    },
                     url: UPLOAD_URL,
-                    contentType: false,
                     type: 'POST',
                     dataType: 'json',
-                    processData: false,
-                    data: data,
-                    success: function (resultData) {
-                        document.getElementById("js-upload-finished-list").innerHTML += '<a href="#" ' +
-                            'class="list-group-item list-group-item-success">' +
-                            SUCCESS_MSG + file.name + '</a>';
-
+                    data: {
+                        file_name: file.name,
+                        loc: loc,
+                        content_type: file.type,
+                        bucket: bucket
                     },
-                    error: function (resultData) {
+                    success: function (presignData) {
+                        var formData = new FormData();
+                        $.each(presignData.fields, function (fieldKey, fieldValue) {
+                            formData.append(fieldKey, fieldValue);
+                        });
+                        formData.append("file", file);
+                        $.ajax({
+                            xhr: function () {
+                                var xhr = new window.XMLHttpRequest();
+                                // Upload progress
+                                xhr.upload.addEventListener("progress", function (evt) {
+                                    if (evt.lengthComputable) {
+                                        var percentComplete = (evt.loaded / evt.total * 100 | 0);
+                                        var progress_bar = document.getElementById("progress-bar");
+                                        var progress_bar_rate = document.getElementById("progress-bar-rate");
+                                        progress_bar.style.width = percentComplete + '%';
+                                        progress_bar_rate.innerHTML = percentComplete + ' % ' + file.name;
+                                    }
+                                }, false);
+                                return xhr;
+                            },
+                            url: presignData.url,
+                            contentType: false,
+                            type: 'POST',
+                            processData: false,
+                            data: formData,
+                            success: function () {
+                                document.getElementById("js-upload-finished-list").innerHTML += '<a href="#" ' +
+                                    'class="list-group-item list-group-item-success">' +
+                                    SUCCESS_MSG + file.name + '</a>';
+                                get_files(loc);
+                            },
+                            error: function () {
+                                document.getElementById("js-upload-finished-list").innerHTML += '<a href="#" ' +
+                                    'class="list-group-item list-group-item-danger">' +
+                                    FAIL_MSG + file.name + '</a>';
+                            }
+                        });
+                    },
+                    error: function () {
                         document.getElementById("js-upload-finished-list").innerHTML += '<a href="#" ' +
                             'class="list-group-item list-group-item-danger">' +
-                             FAIL_MSG + file.name + '</a>';
+                            FAIL_MSG + file.name + '</a>';
                     }
                 });
             })
-            get_files(loc);
         };
 
         uploadForm.addEventListener('submit', function (e) {
@@ -83,11 +102,18 @@
     var selected_file_list = [];
     var copy_selected_file_list = [];
     var sort_a_z_value = true;
+    var current_bucket = $('#bucket').attr("data-bucket");
+
+    function change_bucket(select) {
+        current_bucket = select.value;
+        $('#bucket').attr("data-bucket", current_bucket);
+        get_files("-");
+    }
 
     function create_folder() {
         var loc = $('#location').attr("data-location");
         var folder_name = $('#created_folder_name').val();
-        data = {"folder_name": folder_name, 'loc': loc};
+        data = {"folder_name": folder_name, 'loc': loc, 'bucket': current_bucket};
         $.ajax({
             url: CREATE_FOLDER_URL,
             type: 'POST',
@@ -133,7 +159,7 @@
         loc = $('#location').attr("data-location");
         $('#paste_file').toggleClass('hidden');
         $('#move_file').toggleClass('hidden');
-        data = {'loc': loc, 'file_list': copy_selected_file_list};
+        data = {'loc': loc, 'file_list': copy_selected_file_list, 'bucket': current_bucket};
         $.ajax({
             url: PAST_FILE_URL,
             type: 'POST',
@@ -149,7 +175,7 @@
 
     function delete_file() {
         loc = $('#location').attr("data-location");
-        data = {'file_list': selected_file_list};
+        data = {'file_list': selected_file_list, 'bucket': current_bucket};
         $.ajax({
             url: DELETE_FILE_URL,
             type: 'POST',
@@ -169,12 +195,17 @@
     //     item detail
 
     function open_item(d) {
+        var keyValue = $(d).find('.location-info').text();
         url = d.getAttribute("data-url");
         type = d.getAttribute("data-type");
         if (type === 'folder') {
             get_files("-" + url)
         } else {
-            window.open(url, '_blank');
+            $.getJSON(DOWNLOAD_URL, {file: keyValue, bucket: current_bucket}, function (data) {
+                if (data.url) {
+                    window.open(data.url, '_blank');
+                }
+            });
         }
 
     }
@@ -204,6 +235,7 @@
         $('#location').attr("data-location", main_folder);
         $(".pb-filemng-template-body").empty();
         var get_files_url = FILES_URL.replace(/arg1djs3server/, main_folder.toString()).replace(/sort_a_z/, sort_a_z_value);
+        get_files_url = get_files_url + "?bucket=" + encodeURIComponent(current_bucket);
         $.getJSON(
             get_files_url, function (files_list) {
                 for (var key in files_list) {
@@ -231,7 +263,11 @@
 
     function download_files() {
         for (var key in selected_file_list) {
-            window.open(DOWNLOAD_URL + "?file=" + selected_file_list[key], "_blank");
+            $.getJSON(DOWNLOAD_URL, {file: selected_file_list[key], bucket: current_bucket}, function (data) {
+                if (data.url) {
+                    window.open(data.url, "_blank");
+                }
+            });
         }
     }
 
@@ -249,7 +285,7 @@
         var file = $(d).parent().find('.pb-filemng-paragraphs').html();
         var loc = $('#location').attr("data-location");
         var new_name = $(d).val();
-        data = {'loc': loc, 'file': file, 'new_name': new_name};
+        data = {'loc': loc, 'file': file, 'new_name': new_name, 'bucket': current_bucket};
         $.ajax({
             url: RENAME_URL,
             type: 'POST',
@@ -266,7 +302,7 @@
     function move_file(loc, file_list) {
         $('#move_file').toggleClass('hidden');
         $('#paste_file').toggleClass('hidden');
-        data = {'loc': loc, 'file_list': file_list};
+        data = {'loc': loc, 'file_list': file_list, 'bucket': current_bucket};
         $.ajax({
             url: MOVE_FILE_URL,
             type: 'POST',

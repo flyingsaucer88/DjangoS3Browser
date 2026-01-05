@@ -62,6 +62,15 @@
                                                          onclick="move_selected_file();"
                                                          title="{% trans "Move  Select Files" %}"></span></a></li>
                     </ul>
+                    <form class="navbar-form navbar-left">
+                        <div class="form-group">
+                            <select id="bucket-selector" class="form-control input-sm" onchange="change_bucket(this);">
+                                {% for bucket in buckets %}
+                                    <option value="{{ bucket.name }}" {% if bucket.name == default_bucket %}selected{% endif %}>{{ bucket.label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </form>
 
 
                     <!-- Collect the nav links, forms, and other content for toggling -->
@@ -146,6 +155,7 @@
         </div>
     </div>
     <div id="location" data-location="-"></div>
+    <div id="bucket" data-bucket="{{ default_bucket }}"></div>
 </div>
 <script>
     const FILES_URL = "{% url 'get_folder_items' 'arg1djs3server' 'sort_a_z' %}"

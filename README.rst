@@ -74,6 +74,8 @@ Next, do to Django S3 File Browser configuration:
 
 
     S3_BROWSER_SETTINGS = "djangoS3Browser"
+    # Optional: allow switching between buckets
+    # S3_BROWSER_BUCKETS = ["bucket-one", "bucket-two"]
 
 
 Next, add to TEMPLATES['OPTIONS'] in settings.py:
