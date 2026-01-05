@@ -147,3 +147,36 @@
 .check-file:hover {
     background-color: rgba(0, 0, 255, 0.1);
 }
+
+.pb-toolbar {
+    margin-top: 10px;
+}
+
+.bucket-picker {
+    margin-top: 8px;
+}
+
+.pb-breadcrumb {
+    margin-bottom: 8px;
+}
+
+.toast-container {
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 2000;
+}
+
+.toast-container .alert {
+    margin-bottom: 5px;
+}
+
+.icon-thumb {
+    width: 20px;
+    height: 20px;
+    margin-right: 6px;
+}
+
+#file-table td {
+    vertical-align: middle;
+}

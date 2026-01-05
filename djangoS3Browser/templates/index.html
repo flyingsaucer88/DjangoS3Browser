@@ -6,74 +6,28 @@
 <div class="pb-filemng-template">
     <div class="row">
         <div class="col-sm-12">
-            <!--File MAnager-->
+            <!--File Manager-->
             <nav class="navbar navbar-default pb-filemng-navbar">
                 <div class="container-fluid">
-                    <!-- Navigation -->
                     <div class="navbar-header">
-                        <button type="button" class="pull-left navbar-toggle collapsed treeview-toggle-btn"
-                                data-toggle="collapse" data-target="#treeview-toggle" aria-expanded="false">
-                            <span class="sr-only">Toggle navigation</span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                            <span class="icon-bar"></span>
-                        </button>
-
-                        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-                                data-target="#options" aria-expanded="false">
-                            <span class="sr-only">Toggle navigation</span>
-                            <span class="fa fa-gears"></span>
-                        </button>
-
-                        <!-- Search button -->
                         <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
                                 data-target="#pb-filemng-navigation" aria-expanded="false">
                             <span class="sr-only">Toggle navigation</span>
-                            <span class="fa fa-share"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
                         </button>
                     </div>
 
-                    <ul class="collapse navbar-collapse nav navbar-nav navbar-right" id="options">
-                        <li><a href="javascript:;"><span class="fa fa-lg fa-refresh"
-                                                         onclick="refresh_folder();"
-                                                         title="{% trans "Refresh Folder" %}"></span></a></li>
-                        <li><a href="javascript:;"><span class="fa fa-lg fa-sort-alpha-asc "
-                                                         onclick="sort_a_z(this);" data-sort="a-z"
-                                                         title="{% trans "Sort Files" %}"></span></a></li>
-                        <li><a href="#"><span class="fa fa-folder fa-lg" data-toggle="collapse"
-                                              data-target="#collapseCreateFolder"
-                                              title="{% trans "Create Folder" %}"></span></a></li>
-                        <li><a href="#"><span class="fa fa-upload fa-lg" data-toggle="collapse"
-                                              data-target="#collapseUpload" title="{% trans "Upload" %}"></span></a>
-                        </li>
-                        <li><a href="javascript:;" onclick="download_files();"><span class="fa fa-download fa-lg"
-                                                                                     title="{% trans "Download Selected File" %}"></span></a>
-                        </li>
-                        <li><a href="javascript:;" onclick="copy_selected_file();"><span class="fa fa-lg fa-files-o"
-                                                                                         title="{% trans "Copy Select Files" %}"></span></a>
-                        </li>
-                        <li><a href="javascript:;"><span class="fa fa-lg fa-trash-o" id="move_file"
-                                                         onclick="delete_file();"
-                                                         title="{% trans "Delete  Select Files" %}"></span></a></li>
-                        <li><a href="javascript:;"><span class="fa fa-lg fa-clipboard hidden" id="paste_file"
-                                                         onclick="paste_file();"
-                                                         title="{% trans "Paste Select Files" %}"></span></a></li>
-                        <li><a href="javascript:;"><span class="fa fa-lg fa-arrows-alt hidden" id="move_file"
-                                                         onclick="move_selected_file();"
-                                                         title="{% trans "Move  Select Files" %}"></span></a></li>
-                    </ul>
-                    <form class="navbar-form navbar-left">
-                        <div class="form-group">
-                            <select id="bucket-selector" class="form-control input-sm" onchange="change_bucket(this);">
-                                {% for bucket in buckets %}
-                                    <option value="{{ bucket.name }}" {% if bucket.name == default_bucket %}selected{% endif %}>{{ bucket.label }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </form>
+                    <div class="navbar-form navbar-left bucket-picker">
+                        <label for="bucket-selector" class="control-label">{% trans "Bucket:" %}</label>
+                        <select id="bucket-selector" class="form-control input-sm" onchange="change_bucket(this);">
+                            {% for bucket in buckets %}
+                                <option value="{{ bucket.name }}" {% if bucket.name == default_bucket %}selected{% endif %}>{{ bucket.label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
 
-
-                    <!-- Collect the nav links, forms, and other content for toggling -->
                     <div class="collapse navbar-collapse" id="pb-filemng-navigation">
                         <ul class="nav navbar-nav">
                             <li><a href="javascript:;" id="top_folder" data-top_folder="-" onclick="back_folder(this);"><span
@@ -82,12 +36,31 @@
                                     class="fa fa-home fa-lg"></span></a></li>
                         </ul>
                     </div>
-                    <!-- /.navbar-collapse -->
-
                 </div>
-                <!-- /.container-fluid -->
             </nav>
+
             <div class="panel panel-default">
+                <div class="panel-heading">
+                    <div id="breadcrumb" class="pb-breadcrumb"></div>
+                    <div class="btn-toolbar pb-toolbar" role="toolbar">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-primary btn-sm" data-toggle="collapse" data-target="#collapseUpload"><span class="fa fa-upload"></span> {% trans "Upload" %}</button>
+                            <button type="button" class="btn btn-default btn-sm" data-toggle="collapse" data-target="#collapseCreateFolder"><span class="fa fa-folder"></span> {% trans "New Folder" %}</button>
+                            <button type="button" class="btn btn-default btn-sm" onclick="refresh_folder();"><span class="fa fa-refresh"></span> {% trans "Refresh" %}</button>
+                        </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-default btn-sm" onclick="sort_a_z(this);" data-sort="a-z"><span class="fa fa-sort-alpha-asc"></span> {% trans "Sort" %}</button>
+                        </div>
+                        <div class="btn-group pull-right">
+                            <button type="button" class="btn btn-default btn-sm" onclick="copy_selected_file();"><span class="fa fa-files-o"></span> {% trans "Copy" %}</button>
+                            <button type="button" class="btn btn-default btn-sm hidden" id="paste_file" onclick="paste_file();"><span class="fa fa-clipboard"></span> {% trans "Paste" %}</button>
+                            <button type="button" class="btn btn-default btn-sm hidden" id="move_file" onclick="move_selected_file();"><span class="fa fa-arrows-alt"></span> {% trans "Move" %}</button>
+                            <button type="button" class="btn btn-default btn-sm" onclick="download_files();"><span class="fa fa-download"></span> {% trans "Download" %}</button>
+                            <button type="button" class="btn btn-danger btn-sm" onclick="delete_file();"><span class="fa fa-trash-o"></span> {% trans "Delete" %}</button>
+                        </div>
+                    </div>
+                </div>
+
                 <!--Create Folder-->
                 <div class="collapse" id="collapseCreateFolder">
                     <div class="panel panel-default">
@@ -146,9 +119,20 @@
                     </div>
                 </div>
                 <div class="panel-body pb-filemng-panel-body">
-                    <div class="row">
-                        <div class="col-sm-12 pb-filemng-template-body">
-                        </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-condensed" id="file-table">
+                            <thead>
+                            <tr>
+                                <th style="width:40px;"></th>
+                                <th>{% trans "Name" %}</th>
+                                <th style="width:120px;">{% trans "Type" %}</th>
+                                <th style="width:120px;">{% trans "Size" %}</th>
+                                <th style="width:180px;">{% trans "Modified" %}</th>
+                            </tr>
+                            </thead>
+                            <tbody class="pb-filemng-template-body"></tbody>
+                        </table>
+                        <p id="empty-folder-msg" class="text-center text-muted hidden">{% trans "Folder is Empty" %}</p>
                     </div>
                 </div>
             </div>
@@ -166,8 +150,8 @@
     const DOWNLOAD_URL = '{% url "download" %}'
     const RENAME_URL = '{% url "rename_file" %}'
     const MOVE_FILE_URL = '{% url "move_file" %}'
-    const EMTY_FOLDER_MSG = '<p id="empty-folder-msg" style="text-align:center">{% trans "Folder is Empty" %}</p>'
     const SUCCESS_MSG = '<span class="badge alert-success pull-right">{% trans "Success" %}</span>'
     const FAIL_MSG = '<span class="badge alert-danger pull-right">{% trans "Fail" %}</span>'
 </script>
+<div id="toast-container" class="toast-container"></div>
 <script type="text/javascript" src="{% static 'js/filebrowser.js' %}"></script>

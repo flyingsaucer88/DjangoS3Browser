@@ -80,8 +80,9 @@ def get_files(main_folder, result, sort_a_z, bucket_name, bucket_region):
                     icon = "/static/images/" + extension + ".png" if extension + ".png" in icon_list else "/static/images/file.png"
                 item_type = "folder" if obj.get('Key')[-1] == "/" else "other"  # for show template
                 files_list.append(
-                    {'key': obj.get('Key'), 'url': object_url, 'icon': icon,
-                     'text': obj.get('Key')[len(main_folder) - 1:], 'type': item_type})
+                    {'key': obj.get('Key'), 'full_key': "-" + obj.get('Key'), 'url': object_url, 'icon': icon,
+                     'text': obj.get('Key')[len(main_folder) - 1:], 'type': item_type,
+                     'size': obj.get('Size'), 'last_modified': obj.get('LastModified').isoformat() if obj.get('LastModified') else None})
         return sorted(files_list, key=lambda k: str(k['key']).lower(), reverse=not sort_a_z)
     except Exception as e:
         print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
@@ -95,8 +96,8 @@ def get_folders(main_folder, result, sort_a_z, bucket_name, bucket_region):
             item_type = "folder"  # for show template
             url = obj.get('Prefix')
             files_list.append(
-                {'key': obj.get('Prefix'), 'url': url, 'icon': icon,
-                 'text': obj.get('Prefix')[len(main_folder) - 1:], 'type': item_type})
+                {'key': obj.get('Prefix'), 'full_key': "-" + obj.get('Prefix'), 'url': url, 'icon': icon,
+                 'text': obj.get('Prefix')[len(main_folder) - 1:], 'type': item_type, 'size': None, 'last_modified': None})
         return sorted(files_list, key=lambda k: str(k['key']).lower(), reverse=not sort_a_z)
     except Exception as e:
         print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
